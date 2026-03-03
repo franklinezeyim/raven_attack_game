@@ -1,0 +1,27 @@
+{
+  "name": "raven_attack_game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/franklinezeyim/raven_attack_game.git"
+  },
+  "keywords": [],
+  "author": "franklinezeyim",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/franklinezeyim/raven_attack_game/issues"
+  },
+  "homepage": "https://github.com/franklinezeyim/raven_attack_game#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
+    "@capacitor/ios": "^8.1.0"
+  }
+}

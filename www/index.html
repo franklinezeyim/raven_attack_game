@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+    <!-- PWA / Play Store -->
+    <meta name="application-name" content="Raven Attack">
+    <meta name="description" content="Tap ravens before they escape! 200 levels, daily challenges, boss battles and more.">
+    <meta name="theme-color" content="#1a0800">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Raven Attack">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16.png">
+
+    <link rel="manifest" href="manifest.json">
+
+    <title>Raven Attack</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="day">
+<div id="gameContainer">
+
+    <canvas id="bgCanvas"></canvas>
+    <canvas id="collisionCanvas"></canvas>
+    <canvas id="canvas1"></canvas>
+
+    <!-- ══ START SCREEN ═══════════════════════════════════════════ -->
+    <div id="startScreen">
+        <div>
+            <img src="raven.png" alt="">
+            <h1>🦅 Raven Attack</h1>
+        </div>
+        <p class="tagline">Tap ravens before they escape!</p>
+
+        <!-- Daily Challenge -->
+        <div id="dailySection">
+            <button id="dailyChallengeBtn" type="button" class="btn-daily">📅 Daily Challenge</button>
+            <span id="dailyBadge" class="hidden"></span>
+        </div>
+        <p class="daily-rules">Daily: 90 sec · harder ravens · seeded for everyone</p>
+
+        <div class="divider">— or play normally —</div>
+
+        <p class="difficulty-label">Difficulty</p>
+        <div id="difficultySelect">
+            <button type="button" class="difficulty-btn" data-difficulty="easy">Easy</button>
+            <button type="button" class="difficulty-btn active" data-difficulty="normal">Normal</button>
+            <button type="button" class="difficulty-btn" data-difficulty="hard">Hard</button>
+        </div>
+
+        <div class="legend">
+            <span class="legend-item">👻 Ghost</span>
+            <span class="legend-item giant-label">🦅 Giant</span>
+            <span class="legend-item red-label">🔴 -2❤️</span>
+            <span class="legend-item blue-label">🔵 Slow-mo</span>
+            <span class="legend-item gold-label">🟡 10×</span>
+        </div>
+
+        <p class="high-score-label">Best: <span id="highScoreDisplay">0</span></p>
+
+        <div id="rankSection">
+            <span id="rankDisplay" class="rank-name">Fledgling</span>
+            <div id="xpBarWrap"><div id="xpBarFill"></div></div>
+        </div>
+
+        <div id="leaderboardBox">
+            <p class="leaderboard-title">🏆 Top 5</p>
+            <ol id="leaderboardList"></ol>
+        </div>
+
+        <div class="start-btns">
+            <button id="statsBtn" type="button" class="btn-secondary">📊 Stats</button>
+            <button id="startBtn">▶ Play</button>
+        </div>
+        <div class="start-audio-row">
+            <button id="musicBtnStart" type="button" class="btn-secondary btn-audio-toggle" title="Toggle background music">🎵 Music: ON</button>
+        </div>
+        
+        <span style="font-size: 9px; color: gold; margin-top: 10px;">By Franklin Ezeyim</span>
+    </div><!-- /startScreen -->
+
+    <!-- Stats panel — outside startScreen to avoid clipping on mobile -->
+    <div id="statsPanel" class="hidden">
+            <h3>📊 Your Stats</h3>
+            <p>Games played: <span id="statGames">0</span></p>
+            <p>Best level: <span id="statBestLevel">1</span></p>
+            <p>Best combo: <span id="statBestCombo">0</span></p>
+            <p>Ravens hit: <span id="statRavensHit">0</span></p>
+            <p>Bosses killed: <span id="statBossesKilled">0</span></p>
+            <p>Total XP: <span id="statXP">0</span></p>
+            <p>Rank: <span id="statRank">Fledgling</span></p>
+            <button id="statsCloseBtn" type="button" class="btn-secondary">Close</button>
+        </div>
+
+    <!-- ══ HUD ════════════════════════════════════════════════════ -->
+    <div id="hud">
+        <div class="hud-left">
+            <span id="scoreDisplay">0</span>
+            <span id="levelDisplay">Lv.1/200</span>
+            <span id="comboDisplay"></span>
+        </div>
+        <div class="hud-center">
+            <!-- Daily timer (hidden in normal mode) -->
+            <span id="dailyTimer" class="hidden">⏰ 1:30</span>
+            <!-- Daily badge in HUD -->
+            <span id="dailyHudBadge" class="daily-hud-badge hidden">📅 DAILY</span>
+            <div id="missionDisplay">
+                <span id="missionTarget">🎯 0/5</span>
+                <div id="missionBarWrap"><div id="missionProgress"></div></div>
+            </div>
+            <div id="progressBarWrap"><div id="progressBarFill"></div></div>
+            <div id="comboDecayWrap" class="hidden"><div id="comboDecayFill"></div></div>
+        </div>
+        <div class="hud-right">
+            <span id="livesDisplay">❤️ 5</span>
+            <button id="musicBtn" type="button" title="Toggle music">🎵</button>
+            <button id="soundBtn" type="button" title="Toggle SFX">🔊</button>
+            <button id="pauseBtn" type="button">⏸</button>
+        </div>
+    </div>
+
+    <!-- Power-up bar — bottom left, only visible during gameplay -->
+    <div id="powerupBar" class="hidden">
+        <div class="powerup-bar-label">ITEMS <span class="powerup-keys">[1] [2]</span></div>
+        <div id="powerupSlots"></div>
+        <div id="activeEffects"></div>
+    </div>
+
+    <!-- Boss health bar -->
+    <div id="bossHealthBarWrap" class="hidden">
+        <span id="bossName">👹 BOSS</span>
+        <div id="bossHealthTrack"><div id="bossHealthFill"></div></div>
+    </div>
+
+    <!-- Warning banner -->
+    <div id="warningBanner" class="hidden"><span id="warningText"></span></div>
+
+    <!-- ══ PAUSE ══════════════════════════════════════════════════ -->
+    <div id="pauseOverlay" class="hidden">
+        <div class="overlay-card">
+            <p class="overlay-title">⏸ Paused</p>
+            <p class="sub">Press Space / ⏸ to resume</p>
+            <button id="pauseHomeBtn" class="btn-ember">🏠 Back to Home</button>
+        </div>
+    </div>
+
+    <!-- ══ COUNTDOWN ═════════════════════════════════════════════ -->
+    <div id="countdownOverlay" class="hidden">
+        <span id="countdownText">3</span>
+    </div>
+
+    <!-- ══ MILESTONE ══════════════════════════════════════════════ -->
+    <div id="milestoneScreen" class="hidden">
+        <div class="milestone-card">
+            <div class="milestone-icon">🦅</div>
+            <h2 id="milestoneTitle">The Skies Darken…</h2>
+            <p id="milestoneText">The ravens are learning…</p>
+            <button id="milestoneContinueBtn">Continue ▶</button>
+        </div>
+    </div>
+
+    <!-- ══ LEVEL COMPLETE ════════════════════════════════════════ -->
+    <div id="levelCompleteScreen" class="hidden">
+        <div class="result-card">
+            <h2>🎉 Level Complete!</h2>
+            <p class="level-badge">Level <span id="levelCompleteNumber">1</span></p>
+            <div class="result-stats">
+                <div class="stat-row"><span class="stat-label">Score</span><span class="stat-value" id="levelCompleteScore">0</span></div>
+                <div class="stat-row"><span class="stat-label">Ravens</span><span class="stat-value" id="levelCompleteRavens">0/5</span></div>
+                <div class="stat-row"><span class="stat-label">Accuracy</span><span class="stat-value" id="lcAccuracy">0%</span></div>
+                <div class="stat-row grade-row"><span class="stat-label">Grade</span><span class="stat-value grade-big" id="lcGrade">S</span></div>
+            </div>
+            <p class="personal-best" id="lcBest"></p>
+            <p class="hearts-reset-note">❤️ Hearts fully restored!</p>
+            <p class="powerup-reward" id="lcPowerupReward"></p>
+            <div class="btn-row">
+                <button id="nextLevelBtn">Next Level ▶</button>
+                <button id="lcHomeBtn" class="btn-ember">🏠 Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ GAME OVER ═════════════════════════════════════════════ -->
+    <div id="gameOverScreen" class="hidden">
+        <div class="result-card">
+            <h2>💀 Game Over</h2>
+            <div class="result-stats">
+                <div class="stat-row"><span class="stat-label">Score</span><span class="stat-value" id="finalScore">0</span></div>
+                <div class="stat-row"><span class="stat-label">Level</span><span class="stat-value"><span id="finalLevel">1</span>/200</span></div>
+                <div class="stat-row"><span class="stat-label">Best</span><span class="stat-value gold" id="finalHighScore">0</span></div>
+                <div class="stat-row"><span class="stat-label">Ravens</span><span class="stat-value" id="finalRavensHit">0</span></div>
+                <div class="stat-row"><span class="stat-label">Accuracy</span><span class="stat-value" id="finalAccuracy">0%</span></div>
+                <div class="stat-row grade-row"><span class="stat-label">Grade</span><span class="stat-value grade-big" id="finalGrade">D</span></div>
+            </div>
+            <div id="gameOverLeaderboard">
+                <p class="leaderboard-title">🏆 Top 5</p>
+                <ol id="gameOverLeaderboardList"></ol>
+            </div>
+            <div class="btn-row">
+                <button id="restartBtn">▶ Play Again</button>
+                <button id="gameOverHomeBtn" class="btn-ember">🏠 Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ VICTORY ════════════════════════════════════════════════ -->
+    <div id="victoryScreen" class="hidden">
+        <div class="victory-card">
+            <div class="crown-anim">👑</div>
+            <h2>CHAMPION!</h2>
+            <p class="victory-sub">You conquered all 200 levels!</p>
+            <p class="victory-score">Final Score: <span id="victoryScore">0</span></p>
+            <p class="victory-sub">You are the ultimate Raven Slayer 🦅</p>
+            <div class="btn-row">
+                <button id="victoryRestartBtn">▶ Play Again</button>
+                <button id="victoryHomeBtn" class="btn-ember">🏠 Home</button>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /gameContainer -->
+<div id="toast" class="hidden"></div>
+<script src="script.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
